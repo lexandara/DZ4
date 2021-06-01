@@ -9,4 +9,9 @@ for k in letters:
     profiles=tree.find_all('div',{'class': "post__content post__content_person"})
     for i in range(len(profiles)):
         fff=profiles[i].find_all('div')
-        urlnew = 'https://www.hse.ru' + fff[1].a.get('href')
+        urlnew = 'https://www.hse.ru' + fff[1].a.get('href') #это ссылка на страничку человека
+        
+        responew=requests.get(urlnew)
+        treenew = BeautifulSoup(responew.content, 'html.parser')
+        lang = treenew.find('dl',{'class': "main-list large main-list-language-knowledge-level"})
+        languages = lang.find_all('dd')                     #это языки
