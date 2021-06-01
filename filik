@@ -1,0 +1,12 @@
+import requests
+ss = []
+letters = ['А', 'Б', 'В', 'Г', 'Д', 'Е', 'Ж', 'З', 'И', 'Й', 'К', 'Л', 'М', 'Н', 'О', 'П', 'Р', 'С', 'Т', 'У', 'Ф', 'Х', 'Ц', 'Ш', 'Щ', 'Э', 'Ю', 'Я']
+for k in letters:
+    url='https://www.hse.ru/org/persons?ltr='+ k + ';udept=22726'
+    response=requests.get(url)
+    from bs4 import BeautifulSoup
+    tree = BeautifulSoup(response.content, 'html.parser')
+    profiles=tree.find_all('div',{'class': "post__content post__content_person"})
+    for i in range(len(profiles)):
+        fff=profiles[i].find_all('div')
+        urlnew = 'https://www.hse.ru' + fff[1].a.get('href')
