@@ -11,7 +11,4 @@ for k in letters:
         fff=profiles[i].find_all('div')
         urlnew = 'https://www.hse.ru' + fff[1].a.get('href') #это ссылка на страничку человека
         
-        responew=requests.get(urlnew)
-        treenew = BeautifulSoup(responew.content, 'html.parser')
-        lang = treenew.find('dl',{'class': "main-list large main-list-language-knowledge-level"})
-        languages = lang.find_all('dd')                     #это языки
+        #тут были языки но я ушел доделвать их до конца
