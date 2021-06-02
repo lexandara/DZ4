@@ -6,9 +6,10 @@ df = pd.DataFrame({
     'Научно-педагогический стаж': [0],
     'Преподавательский стаж': [0],
     'Владение языками':[0],
-    'Количество языков': [0]
+    'Количество языков': [0],
     'Начало работы в ВШЭ': [0],
-    'Пол': [0]
+    'Пол': [0],
+    'Количество публикаций': [0]
 })
 letters = ['А', 'Б', 'В', 'Г', 'Д', 'Е', 'Ж', 'З', 'И', 'Й', 'К', 'Л', 'М', 'Н', 'О', 'П', 'Р', 'С', 'Т', 'У', 'Ф', 'Х', 'Ц', 'Ш', 'Щ', 'Э', 'Ю', 'Я']
 for k in letters:
@@ -143,8 +144,8 @@ for k in letters:
             sex = 0
         pol[urlnew] = sex
  #Количество публикаций
- kolichestvo_publ = {}
-publ = treenew.find('sup')
+        kolichestvo_publ = {}
+        publ = treenew.find('sup')
         try:
             publ.text
             publ = str(publ.text)
@@ -154,7 +155,7 @@ publ = treenew.find('sup')
                 publications = publ
         except:
             publications = 0
-kolichestvo_publ[urlnew] = publications
+        kolichestvo_publ[urlnew] = publications
 #вот та самая пресловутая заготовка
         
         df1 = pd.DataFrame({
@@ -165,7 +166,8 @@ kolichestvo_publ[urlnew] = publications
             'Владение языками':yaziki[urlnew],
             'Количество языков': amountyaz[urlnew],
             'Начало работы в ВШЭ': nachalo[urlnew],
-            'Пол': pol[urlnew]
+            'Пол': pol[urlnew],
+            'Количество публикаций': kolichestvo_publ[urlnew]
          })
         df = pd.concat([df, df1])
        
