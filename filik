@@ -1,23 +1,7 @@
 import requests
 import pandas as pd
-df = pd.DataFrame({
-    'Ссылка': [0],
-    'Фамилия': [0],
-    'Имя': [0],
-    'Отчество': [0],
-    'Должность': [0],
-    'Место работы': [0],
-    'Общий стаж(в годах)': [0],
-    'Научно-педагогический стаж': [0],
-    'Преподавательский стаж': [0],
-    'Владение языками':[0],
-    'Количество языков': [0],
-    'Год окончания бакалавриата/специалитета': [0],
-    'Начало работы в ВШЭ': [0],
-    'Пол': [0],
-    'Количество публикаций': [0],
-    'Профессиональные интересы': [0]
-})
+info = []
+
 letters = ['А', 'Б', 'В', 'Г', 'Д', 'Е', 'Ж', 'З', 'И', 'Й', 'К', 'Л', 'М', 'Н', 'О', 'П', 'Р', 'С', 'Т', 'У', 'Ф', 'Х', 'Ц', 'Ш', 'Щ', 'Э', 'Ю', 'Я']
 for k in letters:
     url='https://www.hse.ru/org/persons?ltr='+ k + ';udept=22726'
@@ -128,9 +112,9 @@ for k in letters:
             except:
                 preworktime = 0
         except:
-            genworktime = 0
-            sciworktime = 0
-            preworktime = 0
+            genworktime = [0]
+            sciworktime = [0]
+            preworktime = [0]
         try:
             work = treenew.find('div', {'tab-node': 'stage-info'}).div
             working = str(work)
@@ -151,16 +135,16 @@ for k in letters:
         stag = {}
         sci ={}
         pre = {}
-        stag[urlnew] = [genworktime]
-        sci[urlnew] = [sciworktime]
-        pre[urlnew] = [preworktime]
+        stag[urlnew] = genworktime
+        sci[urlnew] = sciworktime
+        pre[urlnew] = preworktime
         
 #блок с языками
         n = []
         k = []
         yaziki = {}
         amountyaz = {}
-        yaziki[urlnew] = k
+        yaziki[urlnew] = n
         try:
             lang = treenew.find('dl',{'class': "main-list large main-list-language-knowledge-level"})
             languages = lang.find_all('dd')
@@ -168,7 +152,6 @@ for k in letters:
             for i in languages:
                 m = list(i)
                 n.append(m[0])
-            k.append(n)
         except:
             amountyaz[urlnew] = [0]
             yaziki[urlnew] = [0]
@@ -221,6 +204,22 @@ for k in letters:
             publications = 0
         kolichestvo_publ[urlnew] = publications
         
+#Адрес
+        adres = {}
+        adres[urlnew] = [0]
+        try:
+            place = treenew.find('dl', {'class':'main-list large'})
+            adr = place.find_all('dd')
+            for i in adr:
+                adrik = i.text
+                adrik = adrik.split()
+                if adrik[0] == 'Адрес:':
+                    adrik = ' '.join(adrik)
+                    adrik = adrik.split(',')
+                    adres[urlnew] = ' '.join(adrik[0:2])
+        except:
+            adres[urlnew] = [0]
+        
 #Профессиональные интересы
         Professional_interests = {}
         pers_interests = []
@@ -234,10 +233,23 @@ for k in letters:
             
         Professional_interests[urlnew] = pers_interests
         
+#Новости
+        mentioned_in_news = {}
+        try:
+            new = treenew.find('div', {"class" : "b-person-data posts printable", 'tab-index' : 'press_links_news'})
+            news = []
+            for n in new.find_all('p', {"class" : "with-indent"}):
+                            new_one = n.text
+                            news.append(new_one)
+            l = len(news)
+            mentioned_in_news[urlnew] = l
+        except:
+            mentioned_in_news[urlnew] = [0]
+        
 #вот та самая пресловутая заготовка
         
-        df1 = pd.DataFrame({
-            'Ссылка': urlnew ,
+        info.append({
+            'Ссылка': urlnew,
             'Фамилия': Surname[urlnew],
             'Имя': Name[urlnew],
             'Отчество': Patronymic[urlnew],
@@ -252,7 +264,9 @@ for k in letters:
             'Начало работы в ВШЭ': nachalo[urlnew],
             'Пол': pol[urlnew],
             'Количество публикаций': kolichestvo_publ[urlnew],
-            'Профессиональные интересы': Professional_interests[urlnew]
+            'Адрес места работы': adres[urlnew],
+            'Профессиональные интересы': Professional_interests[urlnew],
+            'Упоминаний в новостях': mentioned_in_news[urlnew]
          })
-        df = pd.concat([df, df1])
-df       
+df = pd.DataFrame(data = info)
+df
