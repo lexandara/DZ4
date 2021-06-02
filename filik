@@ -12,6 +12,7 @@ df = pd.DataFrame({
     'Преподавательский стаж': [0],
     'Владение языками':[0],
     'Количество языков': [0],
+    'Год окончания бакалавриата/специалитета': [0],
     'Начало работы в ВШЭ': [0],
     'Пол': [0],
     'Количество публикаций': [0],
@@ -171,15 +172,23 @@ for k in letters:
         except:
             amountyaz[urlnew] = [0]
             yaziki[urlnew] = [0]
-       
-        
+#Год окончания бакалвриата
+        bachelor = {}
+        try:
+            bak = treenew.find('div', {'tab-node': 'sci-degrees1'})
+            bach = bak.find_all('div', {'class': 'person-list-hangover'})
+            bachel = bach[-1].text
+            bachelor[urlnew] = int(bachel)
+        except:
+            bachelor[urlnew] = [0]
+
 ##Год начала работы
         nachalo = {}
         start = treenew.find('li', {'class': 'i'})
         try:
             start.text
             start = str(start.text).split()
-            start_ = start[6]
+            start_ = int(start[6])
         except:
             start_ = 0
         nachalo[urlnew] = start_
@@ -239,11 +248,11 @@ for k in letters:
             'Преподавательский стаж': pre[urlnew],
             'Владение языками':yaziki[urlnew],
             'Количество языков': amountyaz[urlnew],
+            'Год окончания бакалавриата/специалитета': bachelor[urlnew],
             'Начало работы в ВШЭ': nachalo[urlnew],
             'Пол': pol[urlnew],
             'Количество публикаций': kolichestvo_publ[urlnew],
             'Профессиональные интересы': Professional_interests[urlnew]
          })
         df = pd.concat([df, df1])
-       
 df       
