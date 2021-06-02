@@ -89,12 +89,32 @@ for k in letters:
         sci[urlnew] = [sciworktime]
         pre[urlnew] = [preworktime]
         
+#блок с языками
+        n = []
+        k = []
+        yaziki = {}
+        amountyaz = {}
+        yaziki[urlnew] = k
+        try:
+            lang = treenew.find('dl',{'class': "main-list large main-list-language-knowledge-level"})
+            languages = lang.find_all('dd')
+            amountyaz[urlnew] = len(languages)
+            for i in languages:
+                m = list(i)
+                n.append(m[0])
+            k.append(n)
+        except:
+            amountyaz[urlnew] = [0]
+            yaziki[urlnew] = [0]
+        
 #вот та самая пресловутая заготовка
         
         df1 = pd.DataFrame({
             'Ссылка': urlnew ,
             'Общий стаж(в годах)': stag[urlnew],
             'Научно-педагогический стаж': sci[urlnew],
-            'Преподавательский стаж': pre[urlnew]
+            'Преподавательский стаж': pre[urlnew],
+            'Владение языками':yaziki[urlnew],
+            'Количество языков': amountyaz[urlnew]
          })
         df = pd.concat([df, df1])
