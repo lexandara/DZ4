@@ -142,6 +142,19 @@ for k in letters:
         except:
             sex = 0
         pol[urlnew] = sex
+ #Количество публикаций
+ kolichestvo_publ = {}
+publ = treenew.find('sup')
+        try:
+            publ.text
+            publ = str(publ.text)
+            if publ == '*':
+                publications = 0
+            else:
+                publications = publ
+        except:
+            publications = 0
+kolichestvo_publ[urlnew] = publications
 #вот та самая пресловутая заготовка
         
         df1 = pd.DataFrame({
