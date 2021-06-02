@@ -114,7 +114,18 @@ for k in letters:
         except:
             amountyaz[urlnew] = [0]
             yaziki[urlnew] = [0]
+       
         
+##Год начала работы
+        nachalo = {}
+        start = treenew.find('li', {'class': 'i'})
+        try:
+            start.text
+            start = str(start.text).split()
+            start_ = start[6]
+        except:
+            start_ = 0
+        nachalo[urlnew] = start_
 #вот та самая пресловутая заготовка
         
         df1 = pd.DataFrame({
@@ -123,30 +134,7 @@ for k in letters:
             'Научно-педагогический стаж': sci[urlnew],
             'Преподавательский стаж': pre[urlnew],
             'Владение языками':yaziki[urlnew],
-            'Количество языков': amountyaz[urlnew]
+            'Количество языков': amountyaz[urlnew],
+            'Начало работы в ВШЭ': nachalo[urlnew]
          })
         df = pd.concat([df, df1])
-        
-##Год начала работы
-import requests
-from bs4 import BeautifulSoup
-ss = []
-letters = ['А', 'Б', 'В', 'Г', 'Д', 'Е', 'Ж', 'З', 'И', 'Й', 'К', 'Л', 'М', 'Н', 'О', 'П', 'Р', 'С', 'Т', 'У', 'Ф', 'Х', 'Ц', 'Ш', 'Щ', 'Э', 'Ю', 'Я']
-for k in letters:
-    url='https://www.hse.ru/org/persons?ltr='+ k + ';udept=22726'
-    response=requests.get(url)
-    tree = BeautifulSoup(response.content, 'html.parser')
-    profiles=tree.find_all('div',{'class': "post__content post__content_person"})
-    for i in range(len(profiles)):
-        fff=profiles[i].find_all('div')
-        urlnew = 'https://www.hse.ru' + fff[1].a.get('href')
-        response = requests.get(urlnew)
-        html = response.content
-        soup = BeautifulSoup(html,'html.parser')
-        start = soup.find('li', {'class': 'i'})
-        try:
-            start.text
-            start = str(start.text).split()
-            start_ = start[6]
-        except:
-            start_ = 0
