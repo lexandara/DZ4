@@ -2,6 +2,11 @@ import requests
 import pandas as pd
 df = pd.DataFrame({
     'Ссылка': [0],
+    'Фамилия': [0],
+    'Имя': [0],
+    'Отчество': [0],
+    'Должность': [0],
+    'Место работы': [0],
     'Общий стаж(в годах)': [0],
     'Научно-педагогический стаж': [0],
     'Преподавательский стаж': [0],
@@ -9,7 +14,8 @@ df = pd.DataFrame({
     'Количество языков': [0],
     'Начало работы в ВШЭ': [0],
     'Пол': [0],
-    'Количество публикаций': [0]
+    'Количество публикаций': [0],
+    'Профессиональные интересы': [0]
 })
 letters = ['А', 'Б', 'В', 'Г', 'Д', 'Е', 'Ж', 'З', 'И', 'Й', 'К', 'Л', 'М', 'Н', 'О', 'П', 'Р', 'С', 'Т', 'У', 'Ф', 'Х', 'Ц', 'Ш', 'Щ', 'Э', 'Ю', 'Я']
 for k in letters:
@@ -24,7 +30,55 @@ for k in letters:
         
 #это две строчки фнукциональной штуки        
         responew=requests.get(urlnew)
-        treenew = BeautifulSoup(responew.content, 'html.parser') 
+        treenew = BeautifulSoup(responew.content, 'html.parser')
+        
+#ФИО    
+        Surname = {}
+        Name = {}
+        Patronymic = {}
+        
+        personal_info = treenew.find('div', {"class" : "main__inner main__inner_"})
+        full_name = personal_info.find('div').get('title').split()  
+        surname = full_name[0]
+        full_name.remove(full_name[0])
+        name = full_name[0]
+        full_name.remove(full_name[0])
+        if len(full_name) == 1:
+            patronymic = full_name[0]
+        elif len(full_name) < 1:
+            patronymic = 0
+        else:
+            patronymic = ' '.join(map(str, full_name))
+            
+        Surname[urlnew] = surname
+        Name[urlnew] = name
+        Patronymic[urlnew] = patronymic
+        
+#должность и место работы
+        Position = {}
+        Working_place = {}
+        
+        position = []
+        working_place = []
+
+        personalities = treenew.find('ul', {'class' : "g-ul g-list small"})
+
+        try:
+            for position__ in personalities.find_all('span', {'class' : "person-appointment-title"}):
+                position_ = position__.text.strip(':')
+                position.append(position_)
+        except:
+            position.append(0)
+
+        try:
+            for working___place in personalities.find_all('a', {'class' : "link"}):
+                working__place = working___place.text
+                working_place.append(working__place)
+        except:
+            working_place.append(0)
+            
+        Position[urlnew] = position
+        Working_place[urlnew] = working_place
         
 #блок с общим стажем и вообще стажем работы (в конце заготовка под создание датафрейма)
         try:
@@ -143,6 +197,7 @@ for k in letters:
         except:
             sex = 0
         pol[urlnew] = sex
+        
  #Количество публикаций
         kolichestvo_publ = {}
         publ = treenew.find('sup')
@@ -156,10 +211,29 @@ for k in letters:
         except:
             publications = 0
         kolichestvo_publ[urlnew] = publications
+        
+#Профессиональные интересы
+        Professional_interests = {}
+        pers_interests = []
+        try:
+            personal_interests = treenew.find('div', {"class" : "b-person-data b-person-data__tags"})
+            for interesting in personal_interests.find_all('a', {"class" : "tag tag_small"}):
+                interests = interesting.text
+                pers_interests.append(interests)
+        except:
+            pers_interests.append(0)
+            
+        Professional_interests[urlnew] = pers_interests
+        
 #вот та самая пресловутая заготовка
         
         df1 = pd.DataFrame({
             'Ссылка': urlnew ,
+            'Фамилия': Surname[urlnew],
+            'Имя': Name[urlnew],
+            'Отчество': Patronymic[urlnew],
+            'Должность' : Position[urlnew],
+            'Место работы' : Working_place[urlnew],
             'Общий стаж(в годах)': stag[urlnew],
             'Научно-педагогический стаж': sci[urlnew],
             'Преподавательский стаж': pre[urlnew],
@@ -167,7 +241,8 @@ for k in letters:
             'Количество языков': amountyaz[urlnew],
             'Начало работы в ВШЭ': nachalo[urlnew],
             'Пол': pol[urlnew],
-            'Количество публикаций': kolichestvo_publ[urlnew]
+            'Количество публикаций': kolichestvo_publ[urlnew],
+            'Профессиональные интересы': Professional_interests[urlnew]
          })
         df = pd.concat([df, df1])
        
