@@ -1,5 +1,5 @@
 import requests
-ss = []
+import pandas as pd
 letters = ['А', 'Б', 'В', 'Г', 'Д', 'Е', 'Ж', 'З', 'И', 'Й', 'К', 'Л', 'М', 'Н', 'О', 'П', 'Р', 'С', 'Т', 'У', 'Ф', 'Х', 'Ц', 'Ш', 'Щ', 'Э', 'Ю', 'Я']
 for k in letters:
     url='https://www.hse.ru/org/persons?ltr='+ k + ';udept=22726'
@@ -11,4 +11,90 @@ for k in letters:
         fff=profiles[i].find_all('div')
         urlnew = 'https://www.hse.ru' + fff[1].a.get('href') #это ссылка на страничку человека
         
-        #тут были языки но я ушел доделвать их до конца
+#это две строчки фнукциональной штуки        
+        responew=requests.get(urlnew)
+        treenew = BeautifulSoup(responew.content, 'html.parser') 
+        
+#блок с общим стажем и вообще стажем работы (в конце заготовка под создание датафрейма)
+        try:
+            work = treenew.find('div', {'tab-node': 'stage-info'})
+            working = work.find_all('li')
+            
+            working[0] = str(working[0])
+            wo = working[0].split()
+            check = ['года', 'год', 'лет', 'лет</li>','год</li>','года</li>', 'год</div>','года</div>','лет</div>']
+            if len(set(wo) & set(check)) == 0:
+                genworktime = int(wo[2])/12
+                genworktime = round(genworktime, 2)
+            else:
+                try:
+                    genworktime = int(wo[2]) + int(wo[4])/12
+                    genworktime = round(genworktime, 2)
+                except:
+                    genworktime = int(wo[2])
+            try: 
+                working[1] = str(working[1])
+                wo = working[1].split()
+                if len(set(wo) & set(check)) == 0:
+                    sciworktime = int(wo[2])/12
+                    sciworktime = round(sciworktime, 2)
+                else:
+                    try:
+                        sciworktime = int(wo[2]) + int(wo[4])/12
+                        sciworktime = round(sciworktime, 2)
+                    except:
+                        sciworktime = int(wo[2])
+            except:
+                sciworktime = 0
+
+            try:
+                working[2] = str(working[2])
+                wo = working[2].split()
+                if len(set(wo) & set(check)) == 0:
+                    preworktime = int(wo[2])/12
+                    preworktime = round(preworktime, 2)
+                else:
+                    try:
+                        preworktime = int(wo[2]) + int(wo[4])/12
+                        preworktime = round(preworktime, 2)
+                    except:
+                        preworktime = int(wo[2])
+            except:
+                preworktime = 0
+        except:
+            genworktime = 0
+            sciworktime = 0
+            preworktime = 0
+        try:
+            work = treenew.find('div', {'tab-node': 'stage-info'}).div
+            working = str(work)
+            working = working.split()
+            wo = working[1:]
+            check = ['года', 'год', 'лет', 'лет</li>','год</li>','года</li>', 'год</div>','года</div>','лет</div>']
+            if len(set(wo) & set(check)) == 0:
+                genworktime = int(wo[2])/12
+                genworktime = round(genworktime, 2)
+            else:
+                try:
+                    genworktime = int(wo[2]) + int(wo[4])/12
+                    genworktime = round(genworktime, 2)
+                except:
+                    genworktime = int(wo[2])
+        except: 
+            b = 0
+        stag = {}
+        sci ={}
+        pre = {}
+        stag[urlnew] = [genworktime]
+        sci[urlnew] = [sciworktime]
+        pre[urlnew] = [preworktime]
+        
+#вот та самая пресловутая заготовка
+        
+        df1 = pd.DataFrame({
+            'Ссылка': urlnew ,
+            'Общий стаж(в годах)': stag[urlnew],
+            'Научно-педагогический стаж': sci[urlnew],
+            'Преподавательский стаж': pre[urlnew]
+         })
+        df = pd.concat([df, df1])
