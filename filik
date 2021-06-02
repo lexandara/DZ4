@@ -2,7 +2,7 @@ import requests
 import pandas as pd
 info = []
 
-letters = ['А', 'Б', 'В', 'Г', 'Д', 'Е', 'Ж', 'З', 'И', 'Й', 'К', 'Л', 'М', 'Н', 'О', 'П', 'Р', 'С', 'Т', 'У', 'Ф', 'Х', 'Ц', 'Ш', 'Щ', 'Э', 'Ю', 'Я']
+letters = ['А', 'Б', 'В', 'Г', 'Д', 'Е', 'Ж', 'З', 'И', 'Й', 'К', 'Л', 'М', 'Н', 'О', 'П', 'Р', 'С', 'Т', 'У', 'Ф', 'Х', 'Ц', 'Ч', 'Ш', 'Щ', 'Э', 'Ю', 'Я']
 for k in letters:
     url='https://www.hse.ru/org/persons?ltr='+ k + ';udept=22726'
     response=requests.get(url)
@@ -15,258 +15,259 @@ for k in letters:
         
 #это две строчки фнукциональной штуки        
         responew=requests.get(urlnew)
-        treenew = BeautifulSoup(responew.content, 'html.parser')
-        
-#ФИО    
-        Surname = {}
-        Name = {}
-        Patronymic = {}
-        
-        personal_info = treenew.find('div', {"class" : "main__inner main__inner_"})
-        full_name = personal_info.find('div').get('title').split()  
-        surname = full_name[0]
-        full_name.remove(full_name[0])
-        name = full_name[0]
-        full_name.remove(full_name[0])
-        if len(full_name) == 1:
-            patronymic = full_name[0]
-        elif len(full_name) < 1:
-            patronymic = 0
-        else:
-            patronymic = ' '.join(map(str, full_name))
-            
-        Surname[urlnew] = surname
-        Name[urlnew] = name
-        Patronymic[urlnew] = patronymic
-        
-#должность и место работы
-        Position = {}
-        Working_place = {}
-        
-        position = []
-        working_place = []
+        if responew.status_code == 200:
+            treenew = BeautifulSoup(responew.content, 'html.parser')
 
-        personalities = treenew.find('ul', {'class' : "g-ul g-list small"})
+    #ФИО    
+            Surname = {}
+            Name = {}
+            Patronymic = {}
 
-        try:
-            for position__ in personalities.find_all('span', {'class' : "person-appointment-title"}):
-                position_ = position__.text.strip(':')
-                position.append(position_)
-        except:
-            position.append(0)
-
-        try:
-            for working___place in personalities.find_all('a', {'class' : "link"}):
-                working__place = working___place.text
-                working_place.append(working__place)
-        except:
-            working_place.append(0)
-            
-        Position[urlnew] = position
-        Working_place[urlnew] = working_place
-        
-#блок с общим стажем и вообще стажем работы (в конце заготовка под создание датафрейма)
-        try:
-            work = treenew.find('div', {'tab-node': 'stage-info'})
-            working = work.find_all('li')
-            
-            working[0] = str(working[0])
-            wo = working[0].split()
-            check = ['года', 'год', 'лет', 'лет</li>','год</li>','года</li>', 'год</div>','года</div>','лет</div>']
-            if len(set(wo) & set(check)) == 0:
-                genworktime = int(wo[2])/12
-                genworktime = round(genworktime, 2)
+            personal_info = treenew.find('div', {"class" : "main__inner main__inner_"})
+            full_name = personal_info.find('div').get('title').split()  
+            surname = full_name[0]
+            full_name.remove(full_name[0])
+            name = full_name[0]
+            full_name.remove(full_name[0])
+            if len(full_name) == 1:
+                patronymic = full_name[0]
+            elif len(full_name) < 1:
+                patronymic = 0
             else:
-                try:
-                    genworktime = int(wo[2]) + int(wo[4])/12
-                    genworktime = round(genworktime, 2)
-                except:
-                    genworktime = int(wo[2])
-            try: 
-                working[1] = str(working[1])
-                wo = working[1].split()
-                if len(set(wo) & set(check)) == 0:
-                    sciworktime = int(wo[2])/12
-                    sciworktime = round(sciworktime, 2)
-                else:
-                    try:
-                        sciworktime = int(wo[2]) + int(wo[4])/12
-                        sciworktime = round(sciworktime, 2)
-                    except:
-                        sciworktime = int(wo[2])
-            except:
-                sciworktime = 0
+                patronymic = ' '.join(map(str, full_name))
+
+            Surname[urlnew] = surname
+            Name[urlnew] = name
+            Patronymic[urlnew] = patronymic
+
+    #должность и место работы
+            Position = {}
+            Working_place = {}
+
+            position = []
+            working_place = []
+
+            personalities = treenew.find('ul', {'class' : "g-ul g-list small"})
 
             try:
-                working[2] = str(working[2])
-                wo = working[2].split()
+                for position__ in personalities.find_all('span', {'class' : "person-appointment-title"}):
+                    position_ = position__.text.strip(':')
+                    position.append(position_)
+            except:
+                position.append(0)
+
+            try:
+                for working___place in personalities.find_all('a', {'class' : "link"}):
+                    working__place = working___place.text
+                    working_place.append(working__place)
+            except:
+                working_place.append(0)
+
+            Position[urlnew] = position
+            Working_place[urlnew] = working_place
+
+    #блок с общим стажем и вообще стажем работы (в конце заготовка под создание датафрейма)
+            try:
+                work = treenew.find('div', {'tab-node': 'stage-info'})
+                working = work.find_all('li')
+
+                working[0] = str(working[0])
+                wo = working[0].split()
+                check = ['года', 'год', 'лет', 'лет</li>','год</li>','года</li>', 'год</div>','года</div>','лет</div>']
                 if len(set(wo) & set(check)) == 0:
-                    preworktime = int(wo[2])/12
-                    preworktime = round(preworktime, 2)
+                    genworktime = int(wo[2])/12
+                    genworktime = round(genworktime, 2)
                 else:
                     try:
-                        preworktime = int(wo[2]) + int(wo[4])/12
-                        preworktime = round(preworktime, 2)
+                        genworktime = int(wo[2]) + int(wo[4])/12
+                        genworktime = round(genworktime, 2)
                     except:
-                        preworktime = int(wo[2])
-            except:
-                preworktime = 0
-        except:
-            genworktime = [0]
-            sciworktime = [0]
-            preworktime = [0]
-        try:
-            work = treenew.find('div', {'tab-node': 'stage-info'}).div
-            working = str(work)
-            working = working.split()
-            wo = working[1:]
-            check = ['года', 'год', 'лет', 'лет</li>','год</li>','года</li>', 'год</div>','года</div>','лет</div>']
-            if len(set(wo) & set(check)) == 0:
-                genworktime = int(wo[2])/12
-                genworktime = round(genworktime, 2)
-            else:
-                try:
-                    genworktime = int(wo[2]) + int(wo[4])/12
-                    genworktime = round(genworktime, 2)
+                        genworktime = int(wo[2])
+                try: 
+                    working[1] = str(working[1])
+                    wo = working[1].split()
+                    if len(set(wo) & set(check)) == 0:
+                        sciworktime = int(wo[2])/12
+                        sciworktime = round(sciworktime, 2)
+                    else:
+                        try:
+                            sciworktime = int(wo[2]) + int(wo[4])/12
+                            sciworktime = round(sciworktime, 2)
+                        except:
+                            sciworktime = int(wo[2])
                 except:
-                    genworktime = int(wo[2])
-        except: 
-            b = 0
-        stag = {}
-        sci ={}
-        pre = {}
-        stag[urlnew] = genworktime
-        sci[urlnew] = sciworktime
-        pre[urlnew] = preworktime
-        
-#блок с языками
-        n = []
-        k = []
-        yaziki = {}
-        amountyaz = {}
-        yaziki[urlnew] = n
-        try:
-            lang = treenew.find('dl',{'class': "main-list large main-list-language-knowledge-level"})
-            languages = lang.find_all('dd')
-            amountyaz[urlnew] = len(languages)
-            for i in languages:
-                m = list(i)
-                n.append(m[0])
-        except:
-            amountyaz[urlnew] = [0]
-            yaziki[urlnew] = [0]
-#Год окончания бакалвриата
-        bachelor = {}
-        try:
-            bak = treenew.find('div', {'tab-node': 'sci-degrees1'})
-            bach = bak.find_all('div', {'class': 'person-list-hangover'})
-            bachel = bach[-1].text
-            bachelor[urlnew] = int(bachel)
-        except:
-            bachelor[urlnew] = [0]
+                    sciworktime = 0
 
-##Год начала работы
-        nachalo = {}
-        start = treenew.find('li', {'class': 'i'})
-        try:
-            start.text
-            start = str(start.text).split()
-            start_ = int(start[6])
-        except:
-            start_ = 0
-        nachalo[urlnew] = start_
-        
-# Пол
-        pol = {}
-        start = treenew.find('li', {'class': 'i'})
-        try:
-            start.text
-            start = str(start.text).split()
-            if start[0] == 'Начала':
-                sex = 'Ж'
-            else:
-                sex = 'М'
-        except:
-            sex = 0
-        pol[urlnew] = sex
-        
- #Количество публикаций
-        kolichestvo_publ = {}
-        publ = treenew.find('sup')
-        try:
-            publ.text
-            publ = str(publ.text)
-            if publ == '*':
+                try:
+                    working[2] = str(working[2])
+                    wo = working[2].split()
+                    if len(set(wo) & set(check)) == 0:
+                        preworktime = int(wo[2])/12
+                        preworktime = round(preworktime, 2)
+                    else:
+                        try:
+                            preworktime = int(wo[2]) + int(wo[4])/12
+                            preworktime = round(preworktime, 2)
+                        except:
+                            preworktime = int(wo[2])
+                except:
+                    preworktime = 0
+            except:
+                genworktime = [0]
+                sciworktime = [0]
+                preworktime = [0]
+            try:
+                work = treenew.find('div', {'tab-node': 'stage-info'}).div
+                working = str(work)
+                working = working.split()
+                wo = working[1:]
+                check = ['года', 'год', 'лет', 'лет</li>','год</li>','года</li>', 'год</div>','года</div>','лет</div>']
+                if len(set(wo) & set(check)) == 0:
+                    genworktime = int(wo[2])/12
+                    genworktime = round(genworktime, 2)
+                else:
+                    try:
+                        genworktime = int(wo[2]) + int(wo[4])/12
+                        genworktime = round(genworktime, 2)
+                    except:
+                        genworktime = int(wo[2])
+            except: 
+                b = 0
+            stag = {}
+            sci ={}
+            pre = {}
+            stag[urlnew] = genworktime
+            sci[urlnew] = sciworktime
+            pre[urlnew] = preworktime
+
+    #блок с языками
+            n = []
+            k = []
+            yaziki = {}
+            amountyaz = {}
+            yaziki[urlnew] = n
+            try:
+                lang = treenew.find('dl',{'class': "main-list large main-list-language-knowledge-level"})
+                languages = lang.find_all('dd')
+                amountyaz[urlnew] = len(languages)
+                for i in languages:
+                    m = list(i)
+                    n.append(m[0])
+            except:
+                amountyaz[urlnew] = [0]
+                yaziki[urlnew] = [0]
+    #Год окончания бакалвриата
+            bachelor = {}
+            try:
+                bak = treenew.find('div', {'tab-node': 'sci-degrees1'})
+                bach = bak.find_all('div', {'class': 'person-list-hangover'})
+                bachel = bach[-1].text
+                bachelor[urlnew] = int(bachel)
+            except:
+                bachelor[urlnew] = [0]
+
+    ##Год начала работы
+            nachalo = {}
+            start = treenew.find('li', {'class': 'i'})
+            try:
+                start.text
+                start = str(start.text).split()
+                start_ = int(start[6])
+            except:
+                start_ = 0
+            nachalo[urlnew] = start_
+
+    # Пол
+            pol = {}
+            start = treenew.find('li', {'class': 'i'})
+            try:
+                start.text
+                start = str(start.text).split()
+                if start[0] == 'Начала':
+                    sex = 'Ж'
+                else:
+                    sex = 'М'
+            except:
+                sex = 0
+            pol[urlnew] = sex
+
+     #Количество публикаций
+            kolichestvo_publ = {}
+            publ = treenew.find('sup')
+            try:
+                publ.text
+                publ = str(publ.text)
+                if publ == '*':
+                    publications = 0
+                else:
+                    publications = publ
+            except:
                 publications = 0
-            else:
-                publications = publ
-        except:
-            publications = 0
-        kolichestvo_publ[urlnew] = publications
-        
-#Адрес
-        adres = {}
-        adres[urlnew] = [0]
-        try:
-            place = treenew.find('dl', {'class':'main-list large'})
-            adr = place.find_all('dd')
-            for i in adr:
-                adrik = i.text
-                adrik = adrik.split()
-                if adrik[0] == 'Адрес:':
-                    adrik = ' '.join(adrik)
-                    adrik = adrik.split(',')
-                    adres[urlnew] = ' '.join(adrik[0:2])
-        except:
+            kolichestvo_publ[urlnew] = publications
+
+    #Адрес
+            adres = {}
             adres[urlnew] = [0]
-        
-#Профессиональные интересы
-        Professional_interests = {}
-        pers_interests = []
-        try:
-            personal_interests = treenew.find('div', {"class" : "b-person-data b-person-data__tags"})
-            for interesting in personal_interests.find_all('a', {"class" : "tag tag_small"}):
-                interests = interesting.text
-                pers_interests.append(interests)
-        except:
-            pers_interests.append(0)
-            
-        Professional_interests[urlnew] = pers_interests
-        
-#Новости
-        mentioned_in_news = {}
-        try:
-            new = treenew.find('div', {"class" : "b-person-data posts printable", 'tab-index' : 'press_links_news'})
-            news = []
-            for n in new.find_all('p', {"class" : "with-indent"}):
-                            new_one = n.text
-                            news.append(new_one)
-            l = len(news)
-            mentioned_in_news[urlnew] = l
-        except:
-            mentioned_in_news[urlnew] = [0]
-        
-#вот та самая пресловутая заготовка
-        
-        info.append({
-            'Ссылка': urlnew,
-            'Фамилия': Surname[urlnew],
-            'Имя': Name[urlnew],
-            'Отчество': Patronymic[urlnew],
-            'Должность' : Position[urlnew],
-            'Место работы' : Working_place[urlnew],
-            'Общий стаж(в годах)': stag[urlnew],
-            'Научно-педагогический стаж': sci[urlnew],
-            'Преподавательский стаж': pre[urlnew],
-            'Владение языками':yaziki[urlnew],
-            'Количество языков': amountyaz[urlnew],
-            'Год окончания бакалавриата/специалитета': bachelor[urlnew],
-            'Начало работы в ВШЭ': nachalo[urlnew],
-            'Пол': pol[urlnew],
-            'Количество публикаций': kolichestvo_publ[urlnew],
-            'Адрес места работы': adres[urlnew],
-            'Профессиональные интересы': Professional_interests[urlnew],
-            'Упоминаний в новостях': mentioned_in_news[urlnew]
-         })
+            try:
+                place = treenew.find('dl', {'class':'main-list large'})
+                adr = place.find_all('dd')
+                for i in adr:
+                    adrik = i.text
+                    adrik = adrik.split()
+                    if adrik[0] == 'Адрес:':
+                        adrik = ' '.join(adrik)
+                        adrik = adrik.split(',')
+                        adres[urlnew] = ' '.join(adrik[0:2])
+            except:
+                adres[urlnew] = [0]
+
+    #Профессиональные интересы
+            Professional_interests = {}
+            pers_interests = []
+            try:
+                personal_interests = treenew.find('div', {"class" : "b-person-data b-person-data__tags"})
+                for interesting in personal_interests.find_all('a', {"class" : "tag tag_small"}):
+                    interests = interesting.text
+                    pers_interests.append(interests)
+            except:
+                pers_interests.append(0)
+
+            Professional_interests[urlnew] = pers_interests
+
+    #Новости
+            mentioned_in_news = {}
+            try:
+                new = treenew.find('div', {"class" : "b-person-data posts printable", 'tab-index' : 'press_links_news'})
+                news = []
+                for n in new.find_all('p', {"class" : "with-indent"}):
+                                new_one = n.text
+                                news.append(new_one)
+                l = len(news)
+                mentioned_in_news[urlnew] = l
+            except:
+                mentioned_in_news[urlnew] = [0]
+
+    #вот та самая пресловутая заготовка
+
+            info.append({
+                'Ссылка': urlnew,
+                'Фамилия': Surname[urlnew],
+                'Имя': Name[urlnew],
+                'Отчество': Patronymic[urlnew],
+                'Должность' : Position[urlnew],
+                'Место работы' : Working_place[urlnew],
+                'Общий стаж(в годах)': stag[urlnew],
+                'Научно-педагогический стаж': sci[urlnew],
+                'Преподавательский стаж': pre[urlnew],
+                'Владение языками':yaziki[urlnew],
+                'Количество языков': amountyaz[urlnew],
+                'Год окончания бакалавриата/специалитета': bachelor[urlnew],
+                'Начало работы в ВШЭ': nachalo[urlnew],
+                'Пол': pol[urlnew],
+                'Количество публикаций': kolichestvo_publ[urlnew],
+                'Адрес места работы': adres[urlnew],
+                'Профессиональные интересы': Professional_interests[urlnew],
+                'Упоминаний в новостях': mentioned_in_news[urlnew]
+             })
 df = pd.DataFrame(data = info)
 df
