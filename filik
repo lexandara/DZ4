@@ -7,6 +7,8 @@ df = pd.DataFrame({
     'Преподавательский стаж': [0],
     'Владение языками':[0],
     'Количество языков': [0]
+    'Начало работы в ВШЭ': [0],
+    'Пол': [0]
 })
 letters = ['А', 'Б', 'В', 'Г', 'Д', 'Е', 'Ж', 'З', 'И', 'Й', 'К', 'Л', 'М', 'Н', 'О', 'П', 'Р', 'С', 'Т', 'У', 'Ф', 'Х', 'Ц', 'Ш', 'Щ', 'Э', 'Ю', 'Я']
 for k in letters:
@@ -126,6 +128,20 @@ for k in letters:
         except:
             start_ = 0
         nachalo[urlnew] = start_
+        
+# Пол
+        pol = {}
+        start = treenew.find('li', {'class': 'i'})
+        try:
+            start.text
+            start = str(start.text).split()
+            if start[0] == 'Начала':
+                sex = 'Ж'
+            else:
+                sex = 'М'
+        except:
+            sex = 0
+        pol[urlnew] = sex
 #вот та самая пресловутая заготовка
         
         df1 = pd.DataFrame({
@@ -135,7 +151,9 @@ for k in letters:
             'Преподавательский стаж': pre[urlnew],
             'Владение языками':yaziki[urlnew],
             'Количество языков': amountyaz[urlnew],
-            'Начало работы в ВШЭ': nachalo[urlnew]
+            'Начало работы в ВШЭ': nachalo[urlnew],
+            'Пол': pol[urlnew]
          })
         df = pd.concat([df, df1])
-        
+       
+df       
