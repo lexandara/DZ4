@@ -322,11 +322,16 @@ position_dict
 
 workers = {'count_of_science_workers' : 0, 'count_of_not_science_workers' : 0}
 
+workers = {'count_of_science_workers' : 0, 'count_of_not_science_workers' : 0}
+proffesor = []
 for i in range(len(df_pos)):
+    teacher_or_not = df['Ссылка'][i]
     if 'профессор' in df_pos[i] or 'научный сотрудник' in df_pos[i] or 'доцент' in df_pos[i] or 'преподаватель' in df_pos[i] or 'научный руководитель' in df_pos[i] or 'руководитель проекта' in df_pos[i] or 'специалист' in df_pos[i] or 'руководитель проектной группы' in df_pos[i] or 'тьютор' in df_pos[i] or 'ассистент' in df_pos[i]:
         workers['count_of_science_workers'] += 1
+        proffesor.append('Преподаватель')
     else:
         workers['count_of_not_science_workers'] += 1
+        proffesor.append('Иная сфера деятельности')
         
 teachers = workers['count_of_science_workers']
 not_teachers = workers['count_of_not_science_workers']
@@ -334,6 +339,16 @@ not_teachers = workers['count_of_not_science_workers']
 print(f'Всего сотрудников, задействованных в преподавательской деятельности: {teachers}')
 print(f'Сотрудников, занимающихся иной деятельностью: {not_teachers}')
 
-## Вывод: Гипотеза подтвердилась
+dict1 = {}
+for i in range(len(proffesor)):
+    dict1[i] = proffesor[i]
+teacher_or_not = []
+for i in range(len(proffesor)):
+    teacher_or_not.append({
+        'Преподаватель или нет' : dict1[i]
+         })
+    
+dataframe = pd.DataFrame(teacher_or_not)
+df['Сфера деятельности'] = dataframe['Преподаватель или нет']
 
-И прописываем следующюю функцию:
+## Вывод: Гипотеза подтвердилась
